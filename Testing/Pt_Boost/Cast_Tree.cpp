@@ -1,14 +1,52 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+#include <boost/property_tree/ini_parser.hpp>
+#include <boost/property_tree/info_parser.hpp>
+#include <boost/foreach.hpp>
+#include <string>
+#include <set>
 #include <iostream>
 
+//#include "include/yaml-cpp/yaml.h"
+
 namespace pt = boost::property_tree;
+using std::string;
+using std::cout;
+using std::endl;
+using boost::property_tree::ptree;  
 
 // // Create a root
 pt::ptree root;
 
+pt::ptree yaml_root;
+
+
+class YamlClass {
+public:
+    // YamlClass();
+    void display();
+    void display(const int depth, const pt::ptree& tree) {  
+		BOOST_FOREACH( ptree::value_type const &v, tree.get_child("") ) {  
+		    pt::ptree subtree = v.second;  
+		    string nodestr = tree.get<string>(v.first);  
+		      
+		    // print current node  
+		    cout << string("").assign(depth*2,' ') << "* ";  
+		    cout << v.first;  
+		    if ( nodestr.length() > 0 )   
+		      cout << "=\"" << tree.get<string>(v.first) << "\"";  
+		    cout << endl;  
+		      
+		    // recursive go down the hierarchy  
+		    display(depth+1,subtree);  
+		} 
+	}
+};
+ 
 int main(){
 	int num_records;
+	std::cout << "Enter number of records\n";
 	std::cin >> num_records;
 
 	root.put("Total_Records", num_records);
@@ -47,5 +85,37 @@ int main(){
 		std::string x = "Record_" + std::to_string(i);
 		root.add_child(x, record);
 	}
+	// JSON writer
+	std::cout << "\nJSON Root" << std::endl;
 	pt::write_json(std::cout, root);
+	pt::write_json("Records.json", root);
+
+	// XML writer
+	std::cout << "\nXML Root" << std::endl;
+    pt::write_xml( std::cout, root, boost::property_tree::xml_writer_make_settings<std::string>('\t', 1));;
+
+	// Yaml writer
+	std::cout << "\nYAML Root" << std::endl;
+    YamlClass *ymc = new YamlClass(); 
+    ymc->display(0, root);
+
+    // Ini writer
+    std::cout << "\nINI Root" << std::endl;
+    pt::write_ini(std::cout, root);
+
+    // Info writer
+    std::cout << "\nINFO Root" << std::endl;
+    pt::write_info(std::cout, root);
+
 }
+
+
+
+
+
+
+
+
+
+
+
